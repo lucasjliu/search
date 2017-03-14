@@ -8,6 +8,6 @@ and HTTP server from an project [handy](https://github.com/yedf/handy).
 ## Key modules for searching
 
 * **SearchBase**: data structure, type
-* **SearchImpl**: implementaFon of key algorithm
+* **SearchImpl**: key algorithm implementation
 * **Searcher**: module that connects the others
-* **SearchServer**: definiFon of hRp response logic
+* **SearchServer**: definition of http response logic
