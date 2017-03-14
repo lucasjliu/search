@@ -112,29 +112,38 @@ vdoc_t SearchImpl::Alg::doc_a_time(const vterm_t& query,
         doc_score.score = 0;
         for (size_t i = 0; i < query.size(); ++i)
         {
-            /*doc_id_t currDocId = index.find(query[i])->second.vhit[curr[i]].docid;
+            /*doc_id_t currDocId = index.find(term)->second.vhit[curr[i]].docid;
             if (currDocId < doc)
             {
-                while (index.find(query[i])->second.vhit[++curr[i]].docid < doc);
-                currDocId = index.find(query[i])->second.vhit[curr[i]].docid;
+                while (index.find(term)->second.vhit[++curr[i]].docid < doc);
+                currDocId = index.find(term)->second.vhit[curr[i]].docid;
             }
             if (currDocId == doc)
             {
-                doc_len_t freq = index.find(query[i])->second.vhit[++curr[i]].freq;
-                score_t term_score = score_alg.term_score_func(query[i], doc, freq, index, docs);
+                doc_len_t freq = index.find(term)->second.vhit[++curr[i]].freq;
+                score_t term_score = score_alg.term_score_func(term, doc, freq, index, docs);
                 score_alg.score_aggr_func(doc_score.score, term_score);
             }*/
-            if (index.find(query[i]) != index.end())
+            const word_t& term = query[i];
+            auto itr = index.find(term);
+            if (itr != index.end())
             {
-                if (index.find(query[i])->second.hasHit(doc))
-                {
-                    score_t term_score = score_alg.term_score_func(query[i], index.find(query[i])->second.getHit(doc), index, docs);
-                    score_alg.score_aggr_func(doc_score.score, term_score);
+                const auto& tuple = itr->second;
+                if (tuple.hasHit(doc))
+                {//if hit found, compute term score and aggregate, and then store to vscore
+                    for (const auto& hit : tuple.getHits(doc))
+                    {
+                        score_t term_score = score_alg.term_score_func(term, hit, index, docs);
+                        score_alg.score_aggr_func(doc_score.score, term_score);
+                    }
+                    
                 }
             }
         }
         if (doc_score.score > 0)
         {
+            //if no random access to index, then here should keep 
+            // a vscore with size N
             vscore.emplace_back(doc_score);
         }
         doc++;

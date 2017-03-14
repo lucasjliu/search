@@ -73,10 +73,8 @@ void test_json_index()
     LOG_INFO << "begin loading";
     Indexer::loadJson(index, "data/index");
     LOG_INFO << "end loading";
-    assert(index["1.19"].vhit.size() == 12);
-    assert(index["braggadocious"].vhit.size() == 3);
-    assert(index["salla"].vhit[0].docid == 10872);
-    assert(index["salla"].vhit[0].freq == 2);
+    assert(index["1.19"].vhits.size() == 12);
+    assert(index["braggadocious"].vhits.size() == 3);
 }
 
 void test_searchImpl()

@@ -32,7 +32,7 @@ void Searcher::doSearchAsyn(const std::vector<std::string>& query,
     _pool.addTask([=]()
     {
         std::vector<result_t> res;
-        _impl.doSearch(q, k, res);
+        _impl.doSearch(query, k, res);
         cb(std::move(res));
     });
 }

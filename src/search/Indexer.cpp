@@ -255,20 +255,11 @@ bool Indexer::loadJson(search::InvertedIndex& index, const std::string& filepath
             getline(in, line);
             
             tuple.ctf += hit.freq;
-            //tuple.vhit.push_back(std::move(hit));
-            tuple.vhit[hit.docid] = hit;
+            tuple.vhits[hit.docid].push_back(hit);
             
             getline(in, line);
         }
-        
-        /*sort(tuple.vhit.begin(), tuple.vhit.end(), [](const hit_t& h1, const hit_t& h2)
-             {
-                 if (h1.docid == h2.docid)
-                 {
-                     int alert = 0;
-                 }
-                 return h1.docid > h2.docid;
-             });*/
+
         index[word] = std::move(tuple);
     }
     
