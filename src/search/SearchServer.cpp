@@ -9,9 +9,6 @@
 
 using namespace std;
 
-handy::HttpServer* server = nullptr;
-handy::MultiBase* base = nullptr;
-
 std::string search::toJson(const vres_t& vres)
 {
     std::string ret;
@@ -37,8 +34,8 @@ SearchServer::SearchServer(int svrThNum, int schThNum, int schQSize)
 :_searcher(schThNum, schQSize)
 {
     stop();
-    base = new handy::MultiBase(svrThNum);
-    server = new handy::HttpServer(base);
+    _svrPool = new handy::MultiBase(svrThNum);
+    _server = new handy::HttpServer(_svrPool);
 }
 
 void SearchServer::init(std::string indexPath, std::string docFilesPath)
@@ -49,22 +46,24 @@ void SearchServer::init(std::string indexPath, std::string docFilesPath)
 
 void SearchServer::stop()
 {
-    if (server)
+    if (_server)
     {
-        delete server;
+        delete _server;
+        _server = nullptr;
     }
-    if (base)
+    if (_svrPool)
     {
-        delete base;
+        delete _svrPool;
+        _svrPool = nullptr;
     }
 }
 
-void SearchServer::start()
+void SearchServer::start(int port)
 {
-    int r = server->bind("127.0.0.1", 2222);
+    int r = _server->bind("127.0.0.1", port);
     exitif(r, "bind failed %d %s", errno, strerror(errno));
 
-    server->onGet("/", [this](const handy::HttpConnPtr& con) 
+    _server->onGet("/", [this](const handy::HttpConnPtr& con) 
     {
         string uri = con.getRequest().query_uri;
         string v = con.getRequest().version;
@@ -82,7 +81,7 @@ void SearchServer::start()
             {
                 handy::HttpResponse resp;
                 resp.body = search::toJson(std::forward<std::vector<result_t>>(res));
-                con.sendResponse(std::move(resp));
+                con.sendResponse(resp);
 
                 if (v == "HTTP/1.0") 
                 {
@@ -92,7 +91,7 @@ void SearchServer::start()
         }
     });
 
-    /*server->onGet("/hadoop", [this](const handy::HttpConnPtr& con) 
+    /*_server->onGet("/hadoop", [this](const handy::HttpConnPtr& con) 
     {
         string uri = con.getRequest().query_uri;
         string v = con.getRequest().version;
@@ -120,7 +119,7 @@ void SearchServer::start()
         }
     });
 
-    server->onGet("/lucene", [this](const handy::HttpConnPtr& con) 
+    _server->onGet("/lucene", [this](const handy::HttpConnPtr& con) 
     {
         string uri = con.getRequest().query_uri;
         string v = con.getRequest().version;
@@ -147,7 +146,7 @@ void SearchServer::start()
         }
     });*/
 
-    server->onGet("/search.css", [this](const handy::HttpConnPtr& con) 
+    _server->onGet("/search.css", [this](const handy::HttpConnPtr& con) 
     {
         string v = con.getRequest().version;
         con.sendFile("html/search.css");
@@ -157,7 +156,7 @@ void SearchServer::start()
         }
     });
 
-    handy::Signal::signal(SIGINT, [&]{base->exit();});
-    handy::Signal::signal(SIGTSTP, [&]{base->exit();});
-    base->loop();
+    handy::Signal::signal(SIGINT, [&]{_svrPool->exit();});
+    handy::Signal::signal(SIGTSTP, [&]{_svrPool->exit();});
+    _svrPool->loop();
 }

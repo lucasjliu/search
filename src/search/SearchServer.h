@@ -19,14 +19,18 @@ namespace search
 
 class SearchServer
 {
+    using ServerHandler = handy::HttpServer;
+    using ServerPoolHandler = handy::MultiBase;  
 public:
     SearchServer(int svrThNum = 2, int schThNum = 2, int schQSize = 64);
     void init(std::string indexPath, std::string docFilesPath);
-    void start();
+    void start(int port = 2222);
     void stop();
     ~SearchServer() {stop();}
 private:
-    Searcher    _searcher;
+    Searcher            _searcher;
+    ServerHandler*      _server;
+    ServerPoolHandler*  _svrPool;
 };
 
 #endif //_SEARCHSERVER_H
