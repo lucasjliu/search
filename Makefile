@@ -1,6 +1,7 @@
-CPPFLAGS=-g -Wall -Wextra -std=c++11 -iquote src/ -Wno-sign-compare
-CPPFLAGS+=$(PLATFORM_CXXFLAGS) $(PLATFORM_LDFLAGS)
-CXX=g++
+include src/include/config.mk
+
+CPPFLAGS=-Wall -Wextra -std=c++11 -iquote src/ -Wno-sign-compare
+#CXX=g++-6
 SRC_DIR=src/search
 BIN_DIR=bin
 OBJ_DIR=obj
@@ -11,7 +12,6 @@ LIBS=-lhandy
 SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 OBJS=$(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
-include src/include/config.mk
 
 all: $(OBJ_DIR) $(BIN_DIR) test
 

@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <queue>
+#include <cmath>
 
 #include "SearchBase.h"
 #include "Indexer.h"

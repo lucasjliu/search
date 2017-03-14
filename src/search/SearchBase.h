@@ -1,6 +1,8 @@
 //
 //  SearchBase.h
 //
+//  @brief: basic data structure and type definition for searching
+//
 //  by jiahuan.liu
 //  11/23/2016
 //
@@ -8,6 +10,7 @@
 #define _SEARCHBASE_H
 
 #include <string>
+#include <cstring>
 #include <vector>
 #include <unordered_map>
 #include <utility>
@@ -175,13 +178,17 @@ namespace search
                 {
                     continue;
                 }
-                line += newLine;
+                line += newLine; //incase a line is divided to multiple accidently
+
+                //remove noise and check errors
                 if (line.find("| Reuters") != std::string::npos)
                 {
                     size_t pos = line.find("| Reuters");
                     line.erase(pos, strlen("| Reuters"));
                 }
                 tmpv = std::move(Common::sepstr<std::string>(line, "|"));
+
+                //lengtn should be 6, otherwise treat as exception
                 if (tmpv.size() > 6)
                 {
                     std::cout << line << std::endl;
@@ -205,8 +212,8 @@ namespace search
             
             avgdl = (long double)sum / num;
         }
-        score_t avgdl;
-        doc_id_t num;
+        score_t avgdl; //average docutment lengeh, for BM25
+        doc_id_t num; //document number
     };
 }
 

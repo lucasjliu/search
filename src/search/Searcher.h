@@ -1,6 +1,9 @@
 //
 //  Searcher.h
 //
+//  @brief: interface for searching worker instance
+//          handle multi-thread and asynchronized request
+//
 //  by jiahuan.liu
 //  11/24/2016
 //
@@ -13,7 +16,7 @@
 class Searcher
 {
 public:
-    typedef std::function<void(const std::vector<result_t>&)> SearchCallback;
+    typedef std::function<void(std::vector<result_t>&&)> SearchCallback;
     typedef SearchCallback* SearchCallbackPtr;
 public:
     Searcher(int thNum, int qSize);

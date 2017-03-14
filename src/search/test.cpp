@@ -40,7 +40,7 @@ void test_indexer()
 void test_searcher()
 {
     Searcher searcher(4, 128);
-    searcher.load("./data/lucene_index", "./data/docs");
+    searcher.load("./data/index", "./data/docs");
     searcher.start();
     std::vector<result_t> res;
     searcher.doSearchAsyn({"china"}, 10, [](const std::vector<result_t>& res){LOG_INFO << res.size();});
@@ -71,7 +71,7 @@ void test_json_index()
 {
     search::InvertedIndex index;
     LOG_INFO << "begin loading";
-    Indexer::loadJson(index, "data/lucene_index");
+    Indexer::loadJson(index, "data/index");
     LOG_INFO << "end loading";
     assert(index["1.19"].vhit.size() == 12);
     assert(index["braggadocious"].vhit.size() == 3);
@@ -83,7 +83,7 @@ void test_searchImpl()
 {
     SearchImpl impl;
     LOG_INFO << "begin loading";
-    impl.load("data/lucene_index", "data/docs");
+    impl.load("data/index", "data/docs");
     LOG_INFO << "end loading";
     std::vector<result_t> result;
     
@@ -100,7 +100,7 @@ void test_server()
 {
     SearchServer ss(2, 2, 128);
     LOG_INFO << "loading files..";
-    ss.init("data/lucene_index", "data/docs", "data/lucene_index");
+    ss.init("data/index", "data/docs");
     LOG_INFO << "finish loading.";
     ss.start();
 }

@@ -14,190 +14,12 @@
 #include <fstream>
 #include <sstream>
 
+#include <vector>
+#include <map>
+
 #include "Common.h"
 #include "Logger.h"
 #include "Exception.h"
-
-class Atomic
-{
-public:
-    typedef int value_type;
-    Atomic(const value_type& at = 0) :_value(at) {}
-    void reset(const value_type& at = 0) {_value = at;}
-    value_type inc()
-    {
-        std::lock_guard<std::mutex> lock(_mutex);
-        return ++_value;
-    }
-    value_type dec()
-    {
-        std::lock_guard<std::mutex> lock(_mutex);
-        return --_value;
-    }
-    value_type get() const
-    {
-        return _value;
-    }
-private:
-    std::mutex _mutex;
-    value_type _value;
-};
-
-class IdServer
-{
-public:
-    typedef int value_type;
-    IdServer(const value_type& start = 0) :_id(start) {}
-    void init(const value_type& start) {_id.reset(start);}
-    value_type genId() const
-    {
-        value_type ret = _id.get();
-        _id.inc();
-        return ret;
-    }
-    value_type get() {return _id.get();}
-private:
-    mutable Atomic _id;
-};
-
-class Md5Server
-{
-public:
-    bool find(const std::string& md5) const
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        
-        return _set.find(md5) != _set.end();
-    }
-    bool add(const std::string& md5)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        
-        if (_set.find(md5) != _set.end())
-        {
-            return false;
-        }
-        
-        _set.insert(md5);
-        
-        return true;
-    }
-    bool del(const std::string& md5)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        
-        if (_set.find(md5) == _set.end())
-        {
-            return false;
-        }
-        
-        _set.erase(md5);
-        
-        return true;
-    }
-private:
-    mutable std::mutex      _mtx;
-    std::set<std::string>   _set;
-};
-
-
-template<typename T>
-class Deque
-{
-public:
-    void push(const T& t)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        _dq.push_back(t);
-    }
-    bool pop_back(T& t)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        if (_dq.empty())
-            return false;
-        t = _dq.back();
-        _dq.pop_back();
-        return true;
-    }
-    void push_front(const T& t)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        _dq.push_front(t);
-    }
-    bool pop(T& t)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        if (_dq.empty())
-            return false;
-        t = _dq.front();
-        _dq.pop_front();
-        return true;
-    }
-    bool get(T& t)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        if (_dq.empty())
-            return false;
-        t = _dq.back();
-        return true;
-    }
-    bool front(T& t)
-    {
-        std::lock_guard<std::mutex> lock(_mtx);
-        if (_dq.empty())
-            return false;
-        t = _dq.front();
-        return true;
-    }
-private:
-    std::mutex    _mtx;
-    std::deque<T> _dq;
-};
-
-class File
-{
-public:
-    enum
-    {
-        NEW = 1,
-        APP
-    };
-    static bool write(std::string filepath, const std::string& sContent, int eMode)
-    {
-        std::ios_base::openmode mode;
-        if (eMode == NEW)
-        {
-            std::fstream test(filepath);
-            if (test.is_open())
-            {
-                test.close();
-                return false;
-            }
-            mode = std::ios::out;
-        }
-        else if (eMode == APP)
-        {
-            mode = std::ios::out|std::ios::app;
-        }
-        else
-        {
-            mode = std::ios::out;
-        }
-        
-        std::fstream fs(filepath, mode);
-        if (!fs.is_open())
-        {
-            LOG << "fail to save file:" + filepath << END;
-            return false;
-        }
-        fs << sContent;
-        fs.close();
-        
-        return true;
-    }
-private:
-    //std::fstream _fs;
-};
 
 class HtmlUtil
 {
@@ -262,6 +84,86 @@ public:
     static void preClean(std::string& content, std::set<std::string> tags)
     {
         
+    }
+};
+
+class JsonUtil
+{//TODO: move and forward
+public:
+    static std::string buildJsonObject(std::map<std::string, std::string>& mdata)
+    {
+        std::string sTemp;
+        std::ostringstream sStr;
+        sStr << "{";
+        for(std::map<std::string, std::string>::iterator it = mdata.begin(); it != mdata.end(); it++)
+        {
+            sTemp = it->second;
+            if(it == mdata.begin())
+            {
+                if(it->first == "list")
+                {
+                    sStr << "\"" << it->first << "\":" << sTemp;
+                }
+                else
+                {
+                    sStr << "\"" << it->first << "\":\"" << sTemp << "\"";
+                }
+            }
+            else
+            {
+                if(it->first == "list")
+                {
+                    sStr << ",\"" << it->first << "\":" << sTemp;
+                }
+                else
+                {
+                    sStr << ",\"" << it->first << "\":\"" << sTemp << "\"";
+                }
+            }
+        }
+        sStr << "}";
+        
+        return sStr.str();
+    }
+    
+    static std::string buildJsonTuple(std::map<std::string, std::string>& mdata)
+    {
+        std::string sTemp;
+        std::ostringstream sStr;
+        sStr << "{";
+        for(std::map<std::string, std::string>::iterator it = mdata.begin(); it != mdata.end(); it++)
+        {
+            sTemp = it->second;
+            if(it == mdata.begin())
+            {
+                sStr << "\"" << it->first << "\":\"" << sTemp << "\"";
+            }
+            else
+            {
+                sStr << ",\"" << it->first << "\":\"" << sTemp << "\"";
+            }
+        }
+        sStr << "}";
+        return sStr.str();
+    }
+    
+    static std::string buildJsonList(std::vector<std::map<std::string, std::string>>& v_mData)
+    {
+        std::ostringstream sStr;
+        sStr << "[";
+        for(size_t i=0; i<v_mData.size(); i++)
+        {
+            if(i == 0)
+            {
+                sStr << buildJsonTuple(v_mData[i]);
+            }
+            else
+            {
+                sStr << "," << buildJsonTuple(v_mData[i]);
+            }
+        }
+        sStr << "]";
+        return sStr.str();
     }
 };
 
