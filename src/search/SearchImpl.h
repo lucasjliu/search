@@ -60,7 +60,7 @@ public:
     };
     
 public:
-    void doSearch(std::vector<std::string>&& query,
+    void doSearch(const std::vector<std::string>& query,
                   int k,
                   std::vector<result_t>& res);
     void load(const std::string& indexPath, const std::string& docFilesPath);
@@ -88,10 +88,10 @@ private:
         using QueryProcessFunc = std::function<vdoc_t(const vterm_t&, int, score_alg_t, const InvertedIndex&, const DocCollection&)>;
         
         static void score_aggr_add(score_t& s1, const score_t s2);
-        static score_t bm25_term(const word_t& term,
-                                 const hit_t& hit,
-                                 const InvertedIndex& index,
-                                 const DocCollection& docs);
+        static score_t term_score_bm25(const word_t& term,
+                                       const hit_t& hit,
+                                       const InvertedIndex& index,
+                                       const DocCollection& docs);
         static vdoc_t doc_a_time(const vterm_t& query,
                                  int k,
                                  const score_alg_t& score_func,
@@ -104,19 +104,6 @@ private:
                                   const DocCollection& docs);
         template<typename T>
         static void getTopk(std::vector<T>& v, int k);
-    private:
-        static score_t _bm25_term(unsigned tf, unsigned int n_qi, unsigned int dl, double avgdl)
-        {
-            unsigned int total_doc = 101712;
-            double score = 0.0;
-            
-            double k1 = 1.2;
-            double b = 0.75;
-            double wi = log( (total_doc - n_qi + 0.5) / (n_qi + 0.5));
-            double ri =  tf*(k1 + 1) / (tf + k1*(1 - b + b * dl/avgdl));
-            score = wi * ri;
-            return score;
-        }
     };
     using ScoreAggrFunc = Alg::ScoreAggrFunc;
     using TermScoreFunc = Alg::TermScoreFunc;

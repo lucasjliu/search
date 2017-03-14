@@ -223,32 +223,32 @@ bool Indexer::loadJson(search::InvertedIndex& index, const std::string& filepath
             
             getline(in, line);
             pos = 0;
-            key = std::move(HtmlUtil::getBetween(line, pos, "\"", "\""));
+            key = HtmlUtil::getBetween(line, pos, "\"", "\"");
             if (key != "docid")
             {
                 LOG_ERROR << "error " + line;
             }
-            val = std::move(HtmlUtil::getBetween(line, pos, "\"", "\""));
+            val = HtmlUtil::getBetween(line, pos, "\"", "\"");
             hit.docid = Common::strto<doc_id_t>(std::move(val));
             
             getline(in, line);
             pos = 0;
-            key = std::move(HtmlUtil::getBetween(line, pos, "\"", "\""));
+            key = HtmlUtil::getBetween(line, pos, "\"", "\"");
             if (key != "field")
             {
                 LOG_ERROR << "error " + line;
             }
-            val = std::move(HtmlUtil::getBetween(line, pos, "\"", "\""));
+            val = HtmlUtil::getBetween(line, pos, "\"", "\"");
             hit.field = val == "title" ? Field::TITLE : Field::BODY;
             
             getline(in, line);
             pos = 0;
-            key = std::move(HtmlUtil::getBetween(line, pos, "\"", "\""));
+            key = HtmlUtil::getBetween(line, pos, "\"", "\"");
             if (key != "freq")
             {
                 LOG_ERROR << "error " + line;
             }
-            val = std::move(HtmlUtil::getBetween(line, pos, "\"", "\""));
+            val = HtmlUtil::getBetween(line, pos, "\"", "\"");
             hit.freq = Common::strto<doc_id_t>(std::move(val));
             
             getline(in, line);
@@ -268,11 +268,7 @@ bool Indexer::loadJson(search::InvertedIndex& index, const std::string& filepath
                      int alert = 0;
                  }
                  return h1.docid > h2.docid;
-             });
-        if (word == "china")
-        {
-            int alert = 0;
-        }*/
+             });*/
         index[word] = std::move(tuple);
     }
     

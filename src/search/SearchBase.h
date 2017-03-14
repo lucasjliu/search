@@ -35,20 +35,21 @@ namespace search
         BODY,
     };
     
-    struct hit_t //word hit in a doc
+    //word hits in a doc. arranged by field and counted by frequency
+    struct hit_t 
     {
         doc_id_t    docid;
         doc_len_t   freq;   //term frequence in a doc
-        Field       field;
+        Field       field;  //url, title, body, etc
         hit_t() {}
         hit_t(doc_id_t doc, doc_len_t f, Field fd) :docid(doc), freq(f), field(fd) {}
         bool operator==(const hit_t& o) const {return docid == o.docid && freq == o.freq && field == o.field;}
     };
-    
-    struct tuple_t
+
+    //statistical information of a word in the whole collection
+    struct tuple_t 
     {
         doc_id_t            ctf;        //term frequency in collection
-        //doc_id_t            idf;        //inverse doc frequncy
         //std::vector<hit_t>  vhit;       //list of word-doc hits
         std::unordered_map<doc_id_t, hit_t> vhit;
         tuple_t() :ctf(0) {}
@@ -59,6 +60,7 @@ namespace search
     
     typedef std::unordered_map<word_t, tuple_t> InvertedIndex;
     
+    //information of a document
     struct doc_t
     {
         //std::string path;
