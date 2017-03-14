@@ -23,7 +23,10 @@ public:
             if (!_pInstance)
             {
                 _pInstance = new T();
-                std::atext([=]{delete _pInstance;})
+                std::atexit([=] {
+                    if (_pInstance) {
+                        delete _pInstance;
+                }});
             }
         }
     }
@@ -33,7 +36,7 @@ private:
 };
 
 template <typename T>
-ThreadLock Singleton<T>::_pInstance = nullptr;
+T* Singleton<T>::_pInstance = nullptr;
 
 template <typename T>
 ThreadLock Singleton<T>::_lock;
